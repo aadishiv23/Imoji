@@ -130,66 +130,102 @@ struct ContentView: View {
         }
     }
 
-    private var inputBar: some View {
-        HStack(spacing: 12) {
-            Button {
-                // add gallery action
-            } label: {
-                Image(systemName: "photo.on.rectangle")
-                    .font(.system(size: 32))
-                    .foregroundStyle(gradient)
-            }
-            .padding(.horizontal, 2)
+    // MARK: - Input Bar (Siri-Style)
 
-            TextField("Imoji it!", text: $inputText)
-                .padding(12)
-                .background(
-                    RoundedRectangle(cornerRadius: 25)
-                        .fill(.ultraThinMaterial)
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 25)
-                                .stroke(gradient, lineWidth: 1.2)
-                        }
-                )
+    private var inputBar: some View {
+        ZStack {
+            // 1) Background with a blurred, glass-like appearance
+            RoundedRectangle(cornerRadius: 24)
+                .fill(.ultraThinMaterial)
                 .overlay {
-                    gradient
-                        .opacity(0.05)
-                        .clipShape(RoundedRectangle(cornerRadius: 25))
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(gradient, lineWidth: 1.2)
+                }
+                .shadow(color: .primary.opacity(0.1), radius: 8, x: 0, y: 2)
+                .padding(.horizontal, 16)
+                .frame(height: 60)
+                .animation(.easeInOut, value: inputText)
+
+            // 2) Particle effect behind the controls
+            ParticleEffectView()
+                .allowsHitTesting(false)
+                .clipShape(RoundedRectangle(cornerRadius: 24))
+                .padding(.horizontal, 16)
+                .frame(height: 60)
+
+            // 3) Horizontal stack for the input and send button
+            HStack(spacing: 14) {
+                // Gallery button (optional)
+                Button {
+                    // gallery action
+                } label: {
+                    Image(systemName: "photo.on.rectangle")
+                        .font(.system(size: 24))
+                        .foregroundStyle(gradient)
                 }
 
-            Button {
-                startGenerationAnimation() // Fixed: Changed to use the loading animation
-            } label: {
-                Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(gradient)
-                    .shadow(color: .purple.opacity(0.3), radius: 5, x: 0, y: 2)
+                // Text field
+                TextField("Ask Siri…", text: $inputText)
+                    .padding(.vertical, 10)
+                    .padding(.horizontal, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(.thinMaterial)
+                    )
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 18)
+                            .stroke(.clear, lineWidth: 1)
+                    }
+                    // A subtle, bouncy animation on change
+                    .scaleEffect(inputText.isEmpty ? 1.0 : 1.03)
+                    .animation(.spring(), value: inputText)
+                    .onTapGesture {
+                        // Show keyboard or any additional logic
+                    }
+
+                // Send button
+                Button {
+                    startGenerationAnimation()
+                } label: {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 30))
+                        .foregroundStyle(gradient)
+                        .shadow(color: .purple.opacity(0.3), radius: 5, x: 0, y: 2)
+                }
+                .disabled(inputText.isEmpty)
             }
-            .disabled(inputText.isEmpty)
+            .padding(.horizontal, 24)
         }
-        .padding()
+        .padding(.bottom, 8)
     }
 
     private var loadingAnimation: some View {
         ZStack {
+            // Full coverage background
             Color(.systemBackground)
                 .ignoresSafeArea(edges: .all)
 
             VStack(spacing: 20) {
-                ZStack {
+                // Custom progress indicator
+                HStack(spacing: 4) {
                     ForEach(0..<3) { index in
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 100))
-                            .foregroundStyle(gradient)
-                            .rotationEffect(.degrees(rotationAngle + Double(index) * 120))
+                        Circle()
+                            .fill(.white)
+                            .frame(width: 4, height: 4)
                             .opacity(0.8)
+                            .animation(
+                                Animation
+                                    .easeInOut(duration: 0.4)
+                                    .repeatForever()
+                                    .delay(0.2 * Double(index)),
+                                value: rotationAngle
+                            )
                     }
                 }
-                .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: rotationAngle)
 
-                Text("Creating magic...")
-                    .font(.title2)
-                    .foregroundStyle(gradient)
+                Text("generating")
+                    .font(.system(size: 14, weight: .medium, design: .monospaced))
+                    .foregroundColor(.white)
                     .opacity(0.8)
             }
         }
