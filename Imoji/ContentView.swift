@@ -135,14 +135,14 @@ struct ContentView: View {
     private var inputBar: some View {
         ZStack {
             // 1) Background with a blurred, glass-like appearance
-            RoundedRectangle(cornerRadius: 24)
+            RoundedRectangle(cornerRadius: 30)
                 .fill(.ultraThinMaterial)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 24)
-                        .stroke(gradient, lineWidth: 1.2)
+                    RoundedRectangle(cornerRadius: 30)
+                        .stroke(gradient, lineWidth: 2)
                 }
-                .shadow(color: .primary.opacity(0.1), radius: 8, x: 0, y: 2)
-                .padding(.horizontal, 16)
+                .shadow(color: .primary.opacity(0.2), radius: 10, x: 0, y: 5)
+                .padding(.horizontal, 8)
                 .frame(height: 60)
                 .animation(.easeInOut, value: inputText)
 
@@ -160,20 +160,20 @@ struct ContentView: View {
                     // gallery action
                 } label: {
                     Image(systemName: "photo.on.rectangle")
-                        .font(.system(size: 24))
+                        .font(.system(size: 25))
                         .foregroundStyle(gradient)
                 }
 
                 // Text field
-                TextField("Ask Siri…", text: $inputText)
+                TextField("Describe..", text: $inputText)
                     .padding(.vertical, 10)
                     .padding(.horizontal, 12)
                     .background(
-                        RoundedRectangle(cornerRadius: 18)
+                        RoundedRectangle(cornerRadius: 25)
                             .fill(.thinMaterial)
                     )
                     .overlay {
-                        RoundedRectangle(cornerRadius: 18)
+                        RoundedRectangle(cornerRadius: 25)
                             .stroke(.clear, lineWidth: 1)
                     }
                     // A subtle, bouncy animation on change
@@ -188,7 +188,7 @@ struct ContentView: View {
                     startGenerationAnimation()
                 } label: {
                     Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 30))
+                        .font(.system(size: 35))
                         .foregroundStyle(gradient)
                         .shadow(color: .purple.opacity(0.3), radius: 5, x: 0, y: 2)
                 }
