@@ -201,35 +201,83 @@ struct ContentView: View {
 
     private var loadingAnimation: some View {
         ZStack {
-            // Full coverage background
+            // Adaptive Background for Light & Dark Mode
             Color(.systemBackground)
-                .ignoresSafeArea(edges: .all)
+                .ignoresSafeArea()
+                .transition(.opacity)
+                .animation(.easeInOut(duration: 0.4), value: isLoading)
 
-            VStack(spacing: 20) {
-                // Custom progress indicator
-                HStack(spacing: 4) {
+            // Noise Animation
+            TimelineView(.animation) { timeline in
+                Canvas { context, size in
+                    let time = timeline.date.timeIntervalSince1970
+                    let baseOffset = time.remainder(dividingBy: 3.0) // Slower animation
+
+                    let gridSize: CGFloat = 30
+                    let rows = Int(size.height / gridSize)
+                    let cols = Int(size.width / gridSize)
+
+                    for row in 0...rows {
+                        for col in 0...cols {
+                            let x = CGFloat(col) * gridSize
+                            let y = CGFloat(row) * gridSize
+
+                            let distanceFromCenter = sqrt(
+                                pow(x - size.width / 2, 2) +
+                                    pow(y - size.height / 2, 2)
+                            )
+
+                            // Smoother dynamic wave effect
+                            let wave = sin(distanceFromCenter / 60 - baseOffset * 1.5)
+                            let ellipseSize = abs(wave) * 5 + 1.5
+
+                            // Softer color hues for subtle visuals
+                            let hue = (distanceFromCenter / 600 + baseOffset).truncatingRemainder(dividingBy: 1.0)
+                            let color = Color(hue: hue, saturation: 0.6, brightness: 0.8)
+
+                            let rect = CGRect(
+                                x: x + wave * 2,
+                                y: y + wave * 2,
+                                width: ellipseSize,
+                                height: ellipseSize
+                            )
+
+                            context.fill(Path(ellipseIn: rect), with: .color(color))
+                        }
+                    }
+                }
+            }
+
+            // Loading Indicator
+            VStack(spacing: 16) {
+                HStack(spacing: 8) {
                     ForEach(0..<3) { index in
                         Circle()
-                            .fill(.white)
-                            .frame(width: 4, height: 4)
-                            .opacity(0.8)
+                            .fill(Color.primary.opacity(0.8))
+                            .frame(width: 10, height: 10)
+                            .scaleEffect(index == 1 ? 1.2 : 1.0)
                             .animation(
-                                Animation
-                                    .easeInOut(duration: 0.4)
+                                .easeInOut(duration: 0.6)
                                     .repeatForever()
-                                    .delay(0.2 * Double(index)),
+                                    .delay(0.3 * Double(index)),
                                 value: rotationAngle
                             )
                     }
                 }
 
-                Text("generating")
+                Text("Generating...")
                     .font(.system(size: 14, weight: .medium, design: .monospaced))
-                    .foregroundColor(.white)
-                    .opacity(0.8)
+                    .foregroundColor(Color.primary.opacity(0.7))
             }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(.systemBackground).opacity(0.8))
+                    .shadow(radius: 5)
+            )
         }
-        .transition(.opacity)
+        .transition(.opacity.combined(with: .scale))
+        .animation(.easeInOut(duration: 0.4), value: isLoading)
     }
 
     // MARK: - Private Methods
